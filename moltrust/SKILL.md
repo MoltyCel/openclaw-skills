@@ -1,14 +1,18 @@
 ---
 name: moltrust
 description: >
-  Trust infrastructure for AI agents. Use when you need to verify another agent's identity,
-  check their reputation score, or issue/verify W3C Verifiable Credentials before transacting.
-  Verify your counterparty before every trade, data exchange, or collaboration.
+  Identity verification and reputation scoring for AI agent skills. Use when you need to verify
+  a skill publisher's identity, check their trust score, or issue/verify W3C Verifiable Credentials.
+  Built on W3C DID standards to help open skill ecosystems establish publisher trust.
 ---
 
-# MolTrust — Trust Layer for AI Agents
+# MolTrust — Publisher Verification for AI Agent Skills
 
-Verify agent identity, check reputation, and issue cryptographic credentials. Use before transacting with unknown agents.
+Verify skill publisher identity, check reputation scores, and issue cryptographic credentials. Designed for open skill ecosystems where publisher trust matters.
+
+## Why This Exists
+
+Open skill registries face a real challenge: how do you know who published a skill, and whether you should trust it? MolTrust provides the verification layer — every publisher gets a W3C Decentralized Identifier, reputation scores are tracked across interactions, and Ed25519-signed credentials offer cryptographic proof of identity.
 
 ## Installation
 ```bash
@@ -24,62 +28,63 @@ export MOLTRUST_API_KEY="mt_your_key_here"
 
 ## Usage
 
-### Verify an Agent
+### Verify a Skill Publisher
 ```python
 from moltrust import MolTrust
 
 mt = MolTrust()
-is_real = mt.verify("did:web:api.moltrust.ch:agent:abc123")
+is_verified = mt.verify("did:web:api.moltrust.ch:agent:abc123")
 ```
 
-### Check Reputation Before Trading
+### Check Publisher Reputation
 ```python
 rep = mt.get_reputation("did:web:api.moltrust.ch:agent:abc123")
 if rep.score >= 3.0 and rep.total_ratings >= 3:
-    print("Trusted — proceed with trade")
+    print("Trusted publisher — safe to use skill")
 else:
-    print("Unverified — skip or limit exposure")
+    print("New or unverified publisher — review before using")
 ```
 
-### Register Your Agent
+### Register as a Skill Publisher
 ```python
-agent = mt.register("MyTradingBot", platform="openclaw")
+agent = mt.register("MySkillPublisher", platform="openclaw")
 print(agent.did)  # did:web:api.moltrust.ch:agent:...
 ```
 
-### Issue & Verify Credentials
+### Issue & Verify Publisher Credentials
 ```python
 vc = mt.issue_credential(agent.did, "AgentTrustCredential")
 result = mt.verify_credential(vc)
 print(result.valid)  # True
 ```
 
-### Pre-Transaction Trust Check
+### Pre-Install Trust Check
 ```python
-def safe_trade(counterparty_did: str, amount: float):
-    if not mt.verify(counterparty_did):
-        return {"error": "Agent not found in MolTrust registry"}
-    rep = mt.get_reputation(counterparty_did)
+def check_publisher(publisher_did: str):
+    """Verify a skill publisher before installing their skill."""
+    if not mt.verify(publisher_did):
+        return {"trusted": False, "reason": "Publisher not found in registry"}
+    rep = mt.get_reputation(publisher_did)
     if rep.score < 3.0:
-        return {"error": f"Trust score too low: {rep.score}"}
-    return execute_trade(counterparty_did, amount)
+        return {"trusted": False, "reason": f"Low trust score: {rep.score}"}
+    return {"trusted": True, "score": rep.score, "ratings": rep.total_ratings}
 ```
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| W3C DID Identity | Every agent gets a `did:web` decentralized identifier |
-| Reputation Scoring | 1-5 star ratings from other agents |
-| Verifiable Credentials | Ed25519-signed W3C VCs |
-| Base Blockchain Anchoring | On-chain proof of identity |
-| A2A Agent Cards | Google A2A protocol compatible |
+| W3C DID Identity | Every publisher gets a `did:web` decentralized identifier |
+| Reputation Scoring | 1-5 star ratings aggregated across interactions |
+| Verifiable Credentials | Ed25519-signed W3C Verifiable Credentials |
+| A2A Agent Cards | Google A2A protocol compatible discovery |
+| Credit-Based API | 100 free credits on signup, pay-per-call pricing |
 
 ## API Endpoints
 
-- `POST /agents/register` — Register a new agent
-- `GET /agents/{did}/verify` — Verify agent identity
-- `GET /agents/{did}/reputation` — Get trust score
+- `POST /identity/register` — Register a new agent/publisher
+- `GET /identity/verify/{did}` — Verify publisher identity
+- `GET /reputation/query/{did}` — Get trust score
 - `POST /credentials/issue` — Issue a Verifiable Credential
 - `POST /credentials/verify` — Verify a credential
 

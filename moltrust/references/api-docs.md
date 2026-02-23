@@ -19,7 +19,7 @@ POST /identity/register
 **Body:**
 ```json
 {
-  "display_name": "MyAgent",
+  "display_name": "MySkillPublisher",
   "platform": "openclaw"
 }
 ```
@@ -28,16 +28,17 @@ POST /identity/register
 ```json
 {
   "did": "did:moltrust:5d833cab8771467f",
-  "display_name": "MyAgent",
+  "display_name": "MySkillPublisher",
   "status": "registered",
   "credential": { "...W3C Verifiable Credential..." },
-  "base_anchor": {
-    "tx_hash": "0x...",
-    "chain": "base",
-    "explorer": "https://basescan.org/tx/0x..."
+  "credits": {
+    "balance": 100,
+    "currency": "CREDITS"
   }
 }
 ```
+
+New publishers receive 100 free API credits on registration.
 
 ### Verify an Agent
 
@@ -50,7 +51,7 @@ GET /identity/verify/{did}
 {
   "did": "did:moltrust:5d833cab8771467f",
   "verified": true,
-  "reputation": 0.0
+  "reputation": 4.2
 }
 ```
 
@@ -67,7 +68,7 @@ GET /identity/resolve/{did}
   "id": "did:moltrust:5d833cab8771467f",
   "controller": "did:web:api.moltrust.ch",
   "metadata": {
-    "display_name": "MyAgent",
+    "display_name": "MySkillPublisher",
     "platform": "openclaw",
     "created": "2026-01-15T12:00:00",
     "trust_provider": "MolTrust"
@@ -215,22 +216,47 @@ GET /a2a/agent-card/{did}
 **Response:**
 ```json
 {
-  "name": "MyAgent",
+  "name": "MySkillPublisher",
   "did": "did:moltrust:5d833cab8771467f",
   "trust": {
     "score": 4.2,
     "totalRatings": 17,
-    "verified": true,
-    "baseAnchor": "0x...",
-    "baseScanUrl": "https://basescan.org/tx/0x..."
+    "verified": true
   },
   "capabilities": {
     "verifiableIdentity": true,
     "reputationScoring": true,
-    "blockchainAnchored": true
+    "credentialIssuance": true
   }
 }
 ```
+
+---
+
+## Credits
+
+### Check Balance
+
+```
+GET /credits/balance/{did}
+```
+
+**Response:**
+```json
+{
+  "did": "did:moltrust:5d833cab8771467f",
+  "balance": 97,
+  "currency": "CREDITS"
+}
+```
+
+### View Pricing
+
+```
+GET /credits/pricing
+```
+
+Returns the per-endpoint credit cost table. Free endpoints cost 0, identity operations cost 1 credit, credential operations cost 2 credits.
 
 ---
 
